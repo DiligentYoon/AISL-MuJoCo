@@ -1,0 +1,109 @@
+<mujoco model="double_pendulum">
+  <compiler angle="radian"/>
+  <option timestep="0.005" gravity="0 0 -9.81"/>
+
+  <visual>
+    <global offwidth="1280" offheight="720"/>
+  </visual>
+
+  <worldbody>
+    <light name="top_light" pos="0 0 3"/>
+
+    <geom name="ground" type="plane" size="5 5 0.1" rgba="0.8 0.8 0.8 1"/>
+
+    <geom name="pivot_marker"
+          type="sphere"
+          pos="0 0 1.2"
+          size="0.04"
+          rgba="1.0 0.2 0.2 1"
+          contype="0"
+          conaffinity="0"/>
+
+    <body name="link1" pos="0 0 1.2">
+      <joint name="shoulder_hinge"
+             type="hinge"
+             axis="0 1 0"
+             pos="0 0 0"
+             damping="0.05"
+             armature="0.01"
+             limited="true"
+             range="-2.8 2.8"/>
+
+      <geom name="link1_rod"
+            type="capsule"
+            fromto="0 0 0 0 0 -0.55"
+            size="0.025"
+            density="500"
+            rgba="0.2 0.4 0.8 1"/>
+
+      <geom name="link1_bob"
+            type="sphere"
+            pos="0 0 -0.55"
+            size="0.055"
+            mass="0.4"
+            rgba="0.1 0.1 0.8 1"/>
+
+      <geom name="elbow_marker"
+            type="sphere"
+            pos="0 0 -0.55"
+            size="0.035"
+            rgba="1.0 0.6 0.1 1"
+            contype="0"
+            conaffinity="0"/>
+
+      <body name="link2" pos="0 0 -0.55">
+        <joint name="elbow_hinge"
+               type="hinge"
+               axis="0 1 0"
+               pos="0 0 0"
+               damping="0.03"
+               armature="0.005"
+               limited="true"
+               range="-2.8 2.8"/>
+
+        <geom name="link2_rod"
+              type="capsule"
+              fromto="0 0 0 0 0 -0.50"
+              size="0.022"
+              density="450"
+              rgba="0.2 0.8 0.4 1"/>
+
+        <geom name="link2_bob"
+              type="sphere"
+              pos="0 0 -0.50"
+              size="0.05"
+              mass="0.3"
+              rgba="0.1 0.6 0.2 1"/>
+
+        <!-- IMU mounted at the end-effector (link2 tip) -->
+        <site name="imu_site" pos="0 0 -0.50" size="0.01" rgba="1 1 0 1"/>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <motor name="shoulder_motor"
+           joint="shoulder_hinge"
+           gear="1"
+           ctrllimited="true"
+           ctrlrange="-2.0 2.0"/>
+
+    <motor name="elbow_motor"
+           joint="elbow_hinge"
+           gear="1"
+           ctrllimited="true"
+           ctrlrange="-1.5 1.5"/>
+  </actuator>
+
+  <sensor>
+    <framequat     name="imu_quat" objtype="site" objname="imu_site"/>
+    <gyro          name="imu_gyro" site="imu_site"/>
+    <accelerometer name="imu_acc"  site="imu_site"/>
+  </sensor>
+
+  <keyframe>
+    <key name="hanging"   qpos="0.0 0.0"  qvel="0.0 0.0"  ctrl="0.0 0.0"/>
+    <key name="wide_open" qpos="0.8 -0.8" qvel="0.0 0.0"  ctrl="0.0 0.0"/>
+    <key name="folded"    qpos="1.2 1.0"  qvel="0.0 0.0"  ctrl="0.0 0.0"/>
+  </keyframe>
+</mujoco>

@@ -1,0 +1,31 @@
+# ── Markdown ────────────────────────────────────────────────
+# Keep only README.md tracked; plan.md and other notes stay local.
+*.md
+!README.md
+
+# ── ROS2 / colcon workspace ─────────────────────────────────
+build/
+install/
+log/
+
+# ── Python ──────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# ── Editor / OS ─────────────────────────────────────────────
+.idea/
+*.swp
+.DS_Store
+
+# ── MuJoCo / sim artifacts ──────────────────────────────────
+*.mp4
+*.png
+*.jpg
+MUJOCO_LOG.TXT
