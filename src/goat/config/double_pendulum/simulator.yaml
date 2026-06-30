@@ -1,7 +1,0 @@
-simulator_node:
-  ros__parameters:
-    # model_path is normally provided by the launch file; override here if needed.
-    steps_per_cmd: 1       # physics steps advanced per received /cmd
-    use_viewer: true
-    render_sleep: true     # wall-clock pacing for the viewer only (no effect on sim time)
-    home_keyframe: "hanging"

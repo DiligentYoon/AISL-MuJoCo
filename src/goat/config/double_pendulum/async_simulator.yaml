@@ -1,0 +1,8 @@
+async_simulator_node:
+  ros__parameters:
+    # model_path is normally provided by the launch file; override here if needed.
+    timestep: 0.005        # integration dt (s); overrides the MJCF <option timestep>
+    control_hz: 200.0      # timer frequency (Hz); the sim free-runs at this rate
+    steps_per_tick: 1      # physics steps per tick; RTF = control_hz*steps_per_tick*timestep = 1.0
+    use_viewer: true
+    home_keyframe: "hanging"

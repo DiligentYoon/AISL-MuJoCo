@@ -27,6 +27,15 @@ class SimConfig:
     model_path: str
     use_viewer: bool = False
     home_keyframe: Optional[str] = None
+    # Integration timestep (s). None keeps the model's <option timestep>;
+    # the ROS nodes always pass an explicit value so the yaml is authoritative.
+    timestep: Optional[float] = None
+    # Log a one-shot model summary (joint/actuator order) right after load.
+    inspect_on_load: bool = True
+    # Joint publish order (controller convention) as joint names. None keeps the
+    # model's joint order. Mirrors the name-based command path so state and
+    # command use the same convention.
+    joint_order: Optional[List[str]] = None
 
 
 class MujocoSim:
@@ -35,6 +44,14 @@ class MujocoSim:
     def __init__(self, config: SimConfig) -> None:
         self.config = config
         self.model = mujoco.MjModel.from_xml_path(config.model_path)
+
+        # Override the integration timestep from config when provided, so the
+        # yaml/launch parameter wins over whatever the MJCF declares.
+        if config.timestep is not None:
+            if config.timestep <= 0.0:
+                raise ValueError(f"timestep must be > 0, got {config.timestep}")
+            self.model.opt.timestep = config.timestep
+
         self.data = mujoco.MjData(self.model)
 
         # Key-binding flags. key_callback runs in the viewer thread while the
@@ -55,6 +72,22 @@ class MujocoSim:
             if self._home_key_id < 0:
                 logger.warning("home_keyframe '%s' not found; using mj_resetData",
                                config.home_keyframe)
+
+        # Resolve the joint publish order once (controller convention). Default
+        # is the model's joint order; an explicit list reorders state output.
+        self._pub_jids = list(range(self.model.njnt))
+        if config.joint_order:
+            ids = []
+            for name in config.joint_order:
+                jid = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_JOINT, name)
+                if jid < 0:
+                    raise ValueError(f"joint_order name '{name}' not found in model")
+                ids.append(jid)
+            self._pub_jids = ids
+
+        # Summarize the loaded robot (joint + actuator order) once at load time.
+        if config.inspect_on_load:
+            self.inspect()
 
     # ------------------------------------------------------------------ #
     # Physics
@@ -99,6 +132,11 @@ class MujocoSim:
         high = self.model.actuator_ctrlrange[:, 1]
         limited = self.model.actuator_ctrllimited.astype(bool)
         self.data.ctrl[:] = np.where(limited, np.clip(ctrl, low, high), ctrl)
+
+    @property
+    def publish_joint_ids(self) -> List[int]:
+        """Joint ids in publish (controller-convention) order; see SimConfig.joint_order."""
+        return self._pub_jids
 
     def joint_names(self) -> List[str]:
         return [

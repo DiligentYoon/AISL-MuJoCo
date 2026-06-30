@@ -6,7 +6,7 @@ This is the only place allowed to depend on ROS message types, keeping
 from __future__ import annotations
 
 import logging
-
+import mujoco
 import numpy as np
 
 from builtin_interfaces.msg import Time
@@ -23,19 +23,22 @@ logger = logging.getLogger(__name__)
 def sim_time_to_msg(sim_time: float) -> Time:
     sec = int(sim_time)
     nanosec = int(round((sim_time - sec) * 1e9))
-    # guard against rounding to exactly 1e9
-    if nanosec >= 1e9:
+    # guard against rounding to exactly 1e9; keep nanosec an int (Time.nanosec
+    # rejects floats) by subtracting an integer, not the float 1e9.
+    if nanosec >= 1_000_000_000:
         sec += 1
-        nanosec -= 1e9
+        nanosec -= 1_000_000_000
     return Time(sec=sec, nanosec=nanosec)
 
 
 def joint_state_msg(sim: MujocoSim, stamp: Time) -> JointState:
     """Build a JointState from current MjData.
 
-    Reads each joint's qpos/qvel via its address, which is correct for
-    hinge/slide (1-DoF) joints. free/ball joints span multiple DoFs and would
-    need per-type handling -- not used by the initial models.
+    Joints are emitted in ``sim.publish_joint_ids`` order (the controller
+    convention; see SimConfig.joint_order), so state output matches the
+    name-based command path. Reads each joint's qpos/qvel via its address, which
+    is correct for hinge/slide (1-DoF) joints; free/ball joints span multiple
+    DoFs and would need per-type handling -- not addressed by these models.
     """
     model = sim.model
     data = sim.data
@@ -45,7 +48,7 @@ def joint_state_msg(sim: MujocoSim, stamp: Time) -> JointState:
     names = []
     positions = []
     velocities = []
-    for jid in range(model.njnt):
+    for jid in sim.publish_joint_ids:
         names.append(sim_joint_name(sim, jid))
         positions.append(float(data.qpos[model.jnt_qposadr[jid]]))
         velocities.append(float(data.qvel[model.jnt_dofadr[jid]]))
@@ -56,7 +59,6 @@ def joint_state_msg(sim: MujocoSim, stamp: Time) -> JointState:
 
 
 def sim_joint_name(sim: MujocoSim, jid: int) -> str:
-    import mujoco
     return mujoco.mj_id2name(sim.model, mujoco.mjtObj.mjOBJ_JOINT, jid)
 
 
@@ -80,7 +82,6 @@ def imu_msg(sim: MujocoSim, stamp: Time, frame_id: str = "imu_link") -> Imu:
     these sensors on an IMU site in the MJCF to get meaningful values.
     Covariance left at 0 (unknown) per REP-145 convention.
     """
-    import mujoco
 
     msg = Imu()
     msg.header.stamp = stamp
@@ -121,7 +122,6 @@ def cmd_to_ctrl(msg: JointState, sim: MujocoSim) -> np.ndarray:
     applied in actuator order. Unknown names / length mismatches are warned
     and ignored. Actuators not addressed keep ctrl = 0.
     """
-    import mujoco
 
     ctrl = np.zeros(sim.nu, dtype=float)
     effort = list(msg.effort)

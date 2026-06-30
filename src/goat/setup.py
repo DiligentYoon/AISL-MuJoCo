@@ -39,7 +39,8 @@ setup(
     license='Apache-2.0',
     entry_points={
         'console_scripts': [
-            'simulator_node = goat.nodes.simulator_node:main',
+            'sync_simulator_node = goat.nodes.sync_simulator_node:main',
+            'async_simulator_node = goat.nodes.async_simulator_node:main',
         ],
     },
 )

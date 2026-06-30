@@ -1,0 +1,11 @@
+sync_simulator_node:
+  ros__parameters:
+    # model_path is normally provided by the launch file; override here if needed.
+    timestep: 0.005        # integration dt (s); overrides the MJCF <option timestep>
+    steps_per_cmd: 1       # physics steps advanced per received /cmd
+    use_viewer: true
+    render_sleep: true     # wall-clock pacing for the viewer only (no effect on sim time)
+    home_keyframe: "hanging"
+    # Joint publish order = controller convention (L/R paired per joint type).
+    joint_order: ["hip_L_Joint", "hip_R_Joint", "thigh_L_Joint", "thigh_R_Joint",
+                  "knee_L_Joint", "knee_R_Joint", "wheel_L_Joint", "wheel_R_Joint"]

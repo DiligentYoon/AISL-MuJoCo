@@ -1,0 +1,14 @@
+# Placeholder: fill in goat-specific timer params (control_hz, steps_per_tick,
+# home_keyframe, ...) once the goat model is finalized. Until then the node
+# falls back to its declared defaults.
+async_simulator_node:
+  ros__parameters:
+    # model_path is normally provided by the launch file; override here if needed.
+    timestep: 0.005        # integration dt (s); overrides the MJCF <option timestep>
+    control_hz: 200.0      # timer frequency (Hz); the sim free-runs at this rate
+    steps_per_tick: 1      # physics steps per tick; RTF = control_hz*steps_per_tick*timestep = 0.8
+    use_viewer: true
+    home_keyframe: "hanging"
+    # Joint publish order = controller convention (L/R paired per joint type).
+    joint_order: ["hip_L_Joint", "hip_R_Joint", "thigh_L_Joint", "thigh_R_Joint",
+                  "knee_L_Joint", "knee_R_Joint", "wheel_L_Joint", "wheel_R_Joint"]
