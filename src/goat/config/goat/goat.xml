@@ -3,14 +3,20 @@
     
     <option timestep="0.002" gravity="0 0 -9.81"/>
 
+    <visual>
+        <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0"/>
+        <rgba haze="0.15 0.25 0.35 1"/>
+        <global azimuth="120" elevation="-20"/>
+    </visual>
+
     <asset>
-        <texture name="texplane" type="2d" builtin="checker" rgb1=".2 .3 .4" rgb2=".1 0.15 0.2" width="512" height="512"/>
-        <material name="matplane" reflectance="0.3" texture="texplane" texrepeat="1 1" texuniform="true"/>
+        <texture  name="groundplane" type="2d" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" markrgb="0.8 0.8 0.8" width="512" height="512"/>
+        <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.2"/>
     </asset>
 
     <worldbody>
         <light directional="true" diffuse=".8 .8 .8" specular=".2 .2 .2" pos="0 0 5" dir="0 0 -1"/>
-        <geom name="floor" type="plane" size="0 0 1" material="matplane"/>
+        <geom name="floor" type="plane" size="0 0 1" material="groundplane"/>
     </worldbody>
 
     <asset>
@@ -131,11 +137,11 @@
         <position name="hip_L_motor"   joint="hip_L_Joint"   kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-1.7453 1.0123"   forcelimited="true" forcerange="-4.5 4.5"/>
         <position name="thigh_L_motor" joint="thigh_L_Joint" kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-0.3840 2.0071"   forcelimited="true" forcerange="-4.5 4.5"/>
         <position name="knee_L_motor"  joint="knee_L_Joint"  kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-0.523599 2.3387" forcelimited="true" forcerange="-9.0 9.0"/>
-        <position name="wheel_L_motor" joint="wheel_L_Joint" kp="0.0" kv="0.002" ctrllimited="false" forcelimited="true" forcerange="-2.5 2.5"/>
+        <velocity name="wheel_L_motor" joint="wheel_L_Joint" kv="0.002"          ctrllimited="true" ctrlrange="-15.0 15.0"       forcelimited="true" forcerange="-2.5 2.5"/>
         <position name="hip_R_motor"   joint="hip_R_Joint"   kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-1.0123 1.7453"   forcelimited="true" forcerange="-4.5 4.5"/>
         <position name="thigh_R_motor" joint="thigh_R_Joint" kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-2.0071 0.3840"   forcelimited="true" forcerange="-4.5 4.5"/>
         <position name="knee_R_motor"  joint="knee_R_Joint"  kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-2.3387 0.523599" forcelimited="true" forcerange="-9.0 9.0"/>
-        <position name="wheel_R_motor" joint="wheel_R_Joint" kp="0.0" kv="0.002" ctrllimited="false" forcelimited="true" forcerange="-2.5 2.5"/>
+        <velocity name="wheel_R_motor" joint="wheel_R_Joint" kv="0.002"          ctrllimited="true" ctrlrange="-15.0 15.0"       forcelimited="true" forcerange="-2.5 2.5"/>
     </actuator> -->
 
 
@@ -155,7 +161,7 @@
          qpos order (8): hipL thighL kneeL wheelL  hipR thighR kneeR wheelR
          qvel order (8): 8 joint velocities ; ctrl (8): 8 actuators -->
     <keyframe>
-        <key name="hanging"
+        <key name="home"
              qpos="0.0 0.0 0.0 0.0   0.0 0.0 0.0 0.0"
              qvel="0.0 0.0 0.0 0.0   0.0 0.0 0.0 0.0"
              ctrl="0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0"/>

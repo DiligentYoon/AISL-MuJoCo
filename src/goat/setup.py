@@ -41,6 +41,7 @@ setup(
         'console_scripts': [
             'sync_simulator_node = goat.nodes.sync_simulator_node:main',
             'async_simulator_node = goat.nodes.async_simulator_node:main',
+            'test_commander_node = goat.nodes.test_commander_node:main',
         ],
     },
 )

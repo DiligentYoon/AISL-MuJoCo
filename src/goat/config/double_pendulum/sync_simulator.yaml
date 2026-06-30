@@ -5,4 +5,4 @@ sync_simulator_node:
     steps_per_cmd: 1       # physics steps advanced per received /cmd
     use_viewer: true
     render_sleep: true     # wall-clock pacing for the viewer only (no effect on sim time)
-    home_keyframe: "hanging"
+    home_keyframe: "home"

@@ -142,10 +142,28 @@ class SyncSimulatorNode(Node):
     # Housekeeping: quit / viewer close (no stepping)
     # ------------------------------------------------------------------ #
     def _on_housekeep(self) -> None:
+        """Keep the viewer usable while NO commands flow -- never steps.
+
+        Lockstep means /commands is the only trigger that advances physics, but
+        quit / reset / viewer refresh must still respond when the controller is
+        idle (otherwise ``r`` and the rendered state look dead until the next
+        command). This consumes quit and reset (reset + republish, no step) and
+        re-syncs the viewer. It never calls ``sim.step()``, so sim-time and
+        determinism are unchanged.
+        """
         if self.sim.is_quit_requested:
             self._shutdown()
-        elif self._use_viewer and not self.sim.is_viewer_running:
+            return
+        if self._use_viewer and not self.sim.is_viewer_running:
             self._shutdown()
+            return
+
+        if self.sim.consume_reset_request():
+            self.sim.reset()
+            self._publish_state()
+
+        if self._use_viewer:
+            self.sim.sync()
 
     @property
     def shutdown_requested(self) -> bool:

@@ -8,7 +8,7 @@ async_simulator_node:
     control_hz: 200.0      # timer frequency (Hz); the sim free-runs at this rate
     steps_per_tick: 1      # physics steps per tick; RTF = control_hz*steps_per_tick*timestep = 0.8
     use_viewer: true
-    home_keyframe: "hanging"
+    home_keyframe: "home"
     # Joint publish order = controller convention (L/R paired per joint type).
     joint_order: ["hip_L_Joint", "hip_R_Joint", "thigh_L_Joint", "thigh_R_Joint",
                   "knee_L_Joint", "knee_R_Joint", "wheel_L_Joint", "wheel_R_Joint"]

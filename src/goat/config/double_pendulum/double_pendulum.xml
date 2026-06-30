@@ -102,7 +102,7 @@
   </sensor>
 
   <keyframe>
-    <key name="hanging"   qpos="0.0 0.0"  qvel="0.0 0.0"  ctrl="0.0 0.0"/>
+    <key name="home"      qpos="0.0 0.0"  qvel="0.0 0.0"  ctrl="0.0 0.0"/>
     <key name="wide_open" qpos="0.8 -0.8" qvel="0.0 0.0"  ctrl="0.0 0.0"/>
     <key name="folded"    qpos="1.2 1.0"  qvel="0.0 0.0"  ctrl="0.0 0.0"/>
   </keyframe>
