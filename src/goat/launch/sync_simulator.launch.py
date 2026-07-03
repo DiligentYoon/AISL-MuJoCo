@@ -15,7 +15,7 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument(
             'robot',
-            default_value='double_pendulum',
+            default_value='goat',
             description='Robot name; selects config/<robot>/.',
         ),
         DeclareLaunchArgument(
@@ -33,6 +33,8 @@ def generate_launch_description():
             executable='sync_simulator_node',
             name='sync_simulator_node',
             output='screen',
-            parameters=[config_file, {'model_path': model_path}],
+            parameters=[{'model_path': model_path},
+                        config_file,
+                        ],
         ),
     ])

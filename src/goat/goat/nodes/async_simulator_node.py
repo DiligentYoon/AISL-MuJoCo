@@ -37,8 +37,8 @@ class AsyncSimulatorNode(Node):
         super().__init__('async_simulator_node')
 
         self.declare_parameter('model_path', '')
-        self.declare_parameter('timestep', 0.0)
-        self.declare_parameter('control_hz', 100.0)
+        self.declare_parameter('timestep', 0.001)                   # 1000Hz
+        self.declare_parameter('control_hz', 200.0)
         self.declare_parameter('steps_per_tick', 1)
         self.declare_parameter('use_viewer', True)
         self.declare_parameter('home_keyframe', '')

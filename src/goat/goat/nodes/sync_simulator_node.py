@@ -27,7 +27,7 @@ class SyncSimulatorNode(Node):
         super().__init__('sync_simulator_node')
 
         self.declare_parameter('model_path', '')
-        self.declare_parameter('timestep', 0.0)
+        self.declare_parameter('sim_hz', 1000)               # 1000Hz
         self.declare_parameter('steps_per_cmd', 1)
         self.declare_parameter('use_viewer', True)
         self.declare_parameter('render_sleep', True)
@@ -40,9 +40,10 @@ class SyncSimulatorNode(Node):
         model_path = self.get_parameter('model_path').value
         if not model_path:
             raise RuntimeError('Parameter "model_path" must be set.')
-        timestep = float(self.get_parameter('timestep').value)
-        if timestep <= 0.0:
-            raise RuntimeError('Parameter "timestep" must be set (> 0) from yaml/launch.')
+        sim_hz = int(self.get_parameter('sim_hz').value)
+        if sim_hz <= 0:
+            raise RuntimeError('Parameter "sim_hz" must be set (> 0) from yaml/launch.')
+        timestep = float(1 / sim_hz)
         self._steps_per_cmd = max(1, int(self.get_parameter('steps_per_cmd').value))
         self._use_viewer = bool(self.get_parameter('use_viewer').value)
         self._render_sleep = bool(self.get_parameter('render_sleep').value)
@@ -64,17 +65,11 @@ class SyncSimulatorNode(Node):
         self._control_period = self._steps_per_cmd * self.sim.timestep
         self._shutting_down = False
 
-        # RELIABLE so commands are not dropped: in this synchronous closed loop
-        # a dropped /cmd stalls the external controller (deadlock), not data.
+        # Subscriber
         cmd_qos = QoSProfile(depth=10, reliability=ReliabilityPolicy.RELIABLE)
         self.cmd_sub = self.create_subscription(JointState, 'commands', self._on_cmd, cmd_qos)
 
-        # Latched (TRANSIENT_LOCAL, depth 1) so a controller that subscribes
-        # AFTER this node has published the initial seed still receives the
-        # latest state -- this is what breaks the start-up deadlock: the sim
-        # seeds the loop once, the controller wakes on that state and sends the
-        # first /cmd. depth 1 keeps only the newest sample (lockstep => the
-        # controller never wants stale states).
+        # Publisher
         state_qos = QoSProfile(
             depth=1,
             reliability=ReliabilityPolicy.RELIABLE,
