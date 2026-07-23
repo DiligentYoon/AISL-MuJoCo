@@ -22,6 +22,15 @@ import mujoco
 logger = logging.getLogger(__name__)
 
 
+# Actuator command interfaces: which sensor_msgs/JointState field feeds each
+# actuator's ctrl scalar. MuJoCo does not preserve the MJCF shortcut tag
+# (<motor>/<position>/<velocity>) at runtime, so these are resolved once at load
+# from the low-level gain/bias parameters (see _resolve_actuator_interfaces).
+EFFORT = "effort"
+POSITION = "position"
+VELOCITY = "velocity"
+
+
 @dataclass
 class SimConfig:
     model_path: str
@@ -84,6 +93,11 @@ class MujocoSim:
                     raise ValueError(f"joint_order name '{name}' not found in model")
                 ids.append(jid)
             self._pub_jids = ids
+
+        # Resolve each actuator's command interface once (which JointState field
+        # ros_bridge should read into ctrl). Done before inspect() so the load
+        # summary can report it.
+        self._actuator_interfaces = self._resolve_actuator_interfaces()
 
         # Summarize the loaded robot (joint + actuator order) once at load time.
         if config.inspect_on_load:
@@ -150,6 +164,54 @@ class MujocoSim:
             for i in range(self.model.nu)
         ]
 
+    @property
+    def actuator_interfaces(self) -> List[str]:
+        """Per-actuator command interface (EFFORT/POSITION/VELOCITY), length nu.
+
+        Tells ros_bridge which JointState field feeds each actuator's ctrl.
+        Resolved once at load; see _resolve_actuator_interfaces.
+        """
+        return self._actuator_interfaces
+
+    def _resolve_actuator_interfaces(self) -> List[str]:
+        """Infer each actuator's command interface from its gain/bias params.
+
+        MuJoCo drops the MJCF shortcut tag at load, keeping only the force law
+        ``force = gain(ctrl) + bias(l, v, ctrl)``. For the common fixed-gain
+        actuators the bias term identifies the intent (verified on 3.10.0):
+
+        - ``<motor>``    : biastype NONE                       -> EFFORT
+        - ``<position>`` : biastype AFFINE, biasprm[1] (-kp)!=0 -> POSITION
+        - ``<velocity>`` : biastype AFFINE, biasprm[1]==0,
+                           biasprm[2] (-kv)!=0                  -> VELOCITY
+
+        Anything else (muscle, custom general, affine with no kp/kv) is not
+        distinguishable this way and falls back to EFFORT with a one-shot
+        warning, since ctrl is written raw for those.
+        """
+        none_bias = int(mujoco.mjtBias.mjBIAS_NONE)
+        affine_bias = int(mujoco.mjtBias.mjBIAS_AFFINE)
+
+        interfaces: List[str] = []
+        for aid in range(self.model.nu):
+            biastype = int(self.model.actuator_biastype[aid])
+            biasprm = self.model.actuator_biasprm[aid]
+            if biastype == none_bias:
+                interfaces.append(EFFORT)
+            elif biastype == affine_bias and biasprm[1] != 0.0:
+                interfaces.append(POSITION)
+            elif biastype == affine_bias and biasprm[2] != 0.0:
+                interfaces.append(VELOCITY)
+            else:
+                name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_ACTUATOR, aid)
+                logger.warning(
+                    "actuator '%s' (id %d) has an unrecognized gain/bias profile "
+                    "(biastype=%d); defaulting to EFFORT (ctrl written raw)",
+                    name, aid, biastype,
+                )
+                interfaces.append(EFFORT)
+        return interfaces
+
     # ------------------------------------------------------------------ #
     # Inspection (see tutorials/04_tutorial_model_data_inspection.py)
     # ------------------------------------------------------------------ #
@@ -179,11 +241,12 @@ class MujocoSim:
             name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_ACTUATOR, aid)
             lines.append(
                 f"  ctrl[{aid}] {name} "
+                f"interface={self._actuator_interfaces[aid]} "
                 f"ctrlrange={self.model.actuator_ctrlrange[aid]} "
                 f"gear={self.model.actuator_gear[aid][0]}"
             )
         report = "\n".join(lines)
-        logger.info("\n%s", report)
+        logger.info("%s", report)
         return report
 
     # ------------------------------------------------------------------ #

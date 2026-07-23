@@ -27,6 +27,7 @@ from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy
 from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg import Imu, JointState
+from nav_msgs.msg import Odometry
 
 from goat.utils import ros_bridge
 from goat.utils.mujoco_sim import MujocoSim, SimConfig
@@ -35,6 +36,10 @@ from goat.utils.mujoco_sim import MujocoSim, SimConfig
 class AsyncSimulatorNode(Node):
     def __init__(self) -> None:
         super().__init__('async_simulator_node')
+
+        # Route mujoco_sim/ros_bridge stdlib logging into rosout so the load-time
+        # model inspection and resolver warnings are visible under ros2 launch.
+        ros_bridge.install_ros_logging_bridge(self)
 
         self.declare_parameter('model_path', '')
         self.declare_parameter('timestep', 0.0)
@@ -83,6 +88,7 @@ class AsyncSimulatorNode(Node):
         self.cmd_sub = self.create_subscription(JointState, 'commands', self._on_cmd, cmd_qos)
         self.joint_pub = self.create_publisher(JointState, 'sim_joint_states', 10)
         self.imu_pub = self.create_publisher(Imu, 'sim_imu', 10)
+        self.odom_pub = self.create_publisher(Odometry, 'sim_odom', 10)
         self.clock_pub = self.create_publisher(Clock, 'clock', 10)
 
         # The loop: a wall-clock timer drives every step. It always fires, so
@@ -132,6 +138,7 @@ class AsyncSimulatorNode(Node):
         self.clock_pub.publish(Clock(clock=stamp))
         self.joint_pub.publish(ros_bridge.joint_state_msg(self.sim, stamp))
         self.imu_pub.publish(ros_bridge.imu_msg(self.sim, stamp))
+        self.odom_pub.publish(ros_bridge.odom_msg(self.sim, stamp))
 
     @property
     def shutdown_requested(self) -> bool:

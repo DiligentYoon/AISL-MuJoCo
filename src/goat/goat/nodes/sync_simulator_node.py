@@ -26,6 +26,10 @@ class SyncSimulatorNode(Node):
     def __init__(self) -> None:
         super().__init__('sync_simulator_node')
 
+        # Route mujoco_sim/ros_bridge stdlib logging into rosout so the load-time
+        # model inspection and resolver warnings are visible under ros2 launch.
+        ros_bridge.install_ros_logging_bridge(self)
+
         self.declare_parameter('model_path', '')
         self.declare_parameter('timestep', 0.0)
         self.declare_parameter('steps_per_cmd', 1)

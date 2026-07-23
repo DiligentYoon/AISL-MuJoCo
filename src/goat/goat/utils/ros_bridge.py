@@ -11,10 +11,62 @@ import numpy as np
 
 from builtin_interfaces.msg import Time
 from sensor_msgs.msg import Imu, JointState
+from nav_msgs.msg import Odometry
 
-from goat.utils.mujoco_sim import MujocoSim
+from goat.utils.mujoco_sim import EFFORT, POSITION, VELOCITY, MujocoSim
 
 logger = logging.getLogger(__name__)
+
+
+# ---------------------------------------------------------------------- #
+# stdlib logging -> ROS (rosout) bridge
+# ---------------------------------------------------------------------- #
+class _RosLogBridge(logging.Handler):
+    """Forward stdlib logging records to a rclpy node's logger (rosout)."""
+
+    def __init__(self, node) -> None:
+        super().__init__()
+        self._logger = node.get_logger()
+
+    def emit(self, record: logging.LogRecord) -> None:
+        msg = self.format(record)
+        level = record.levelno
+        if level >= logging.ERROR:
+            self._logger.error(msg)
+        elif level >= logging.WARNING:
+            self._logger.warn(msg)
+        elif level >= logging.INFO:
+            self._logger.info(msg)
+        else:
+            self._logger.debug(msg)
+
+
+def install_ros_logging_bridge(node, logger_name: str = "goat",
+                               level: int = logging.INFO) -> None:
+    """Route stdlib logging under ``logger_name`` into the node's rosout logger.
+
+    ``mujoco_sim`` / ``ros_bridge`` log via the stdlib logging module so they
+    stay ROS-free. Under a ROS launch those records are otherwise dropped: INFO
+    is below the last-resort handler's WARNING threshold and nothing reaches
+    rosout. Call this once early in a node's ``__init__`` (before the sim is
+    built) so their INFO/WARNING -- e.g. the load-time model inspection and the
+    actuator-interface resolver warnings -- show up in the ROS log.
+    """
+    log = logging.getLogger(logger_name)
+    log.setLevel(level)
+    log.propagate = False
+    if any(isinstance(h, _RosLogBridge) for h in log.handlers):
+        return  # idempotent: don't stack a bridge on re-init
+    log.addHandler(_RosLogBridge(node))
+
+
+# Which JointState field supplies the ctrl scalar for each actuator interface.
+# Keyed by the interface constants MujocoSim resolves at load time.
+_FIELD_BY_INTERFACE = {
+    EFFORT: "effort",
+    POSITION: "position",
+    VELOCITY: "velocity",
+}
 
 
 # ---------------------------------------------------------------------- #
@@ -110,6 +162,49 @@ def imu_msg(sim: MujocoSim, stamp: Time, frame_id: str = "imu_link") -> Imu:
 
     return msg
 
+def odom_msg(sim: MujocoSim, stamp: Time, frame_id: str = "odom", child_frame_id: str = "base_link") -> Odometry:
+    """Build a nav_msgs/Odometry from MuJoCo state.
+
+    Uses the first free joint (base) for pose and velocity. If no free joint is
+    present, returns an Odometry message with zero pose and velocity.
+    """
+    msg = Odometry()
+    msg.header.stamp = stamp
+    msg.header.frame_id = frame_id
+    msg.child_frame_id = child_frame_id
+
+    # Find the first free joint (base)
+    base_jid = None
+    for jid in range(sim.model.njnt):
+        if sim.model.jnt_type[jid] == mujoco.mjtJoint.mjJNT_FREE:
+            base_jid = jid
+            break
+
+    if base_jid is not None:
+        pos_adr = sim.model.jnt_qposadr[base_jid]
+        vel_adr = sim.model.jnt_dofadr[base_jid]
+
+        # Position and orientation
+        msg.pose.pose.position.x = float(sim.data.qpos[pos_adr])
+        msg.pose.pose.position.y = float(sim.data.qpos[pos_adr + 1])
+        msg.pose.pose.position.z = float(sim.data.qpos[pos_adr + 2])
+
+        quat = sim.data.qpos[pos_adr + 3:pos_adr + 7]  # w, x, y, z
+        msg.pose.pose.orientation.x = float(quat[1])
+        msg.pose.pose.orientation.y = float(quat[2])
+        msg.pose.pose.orientation.z = float(quat[3])
+        msg.pose.pose.orientation.w = float(quat[0])
+
+        # Linear and angular velocity
+        msg.twist.twist.linear.x = float(sim.data.qvel[vel_adr])
+        msg.twist.twist.linear.y = float(sim.data.qvel[vel_adr + 1])
+        msg.twist.twist.linear.z = float(sim.data.qvel[vel_adr + 2])
+
+        msg.twist.twist.angular.x = float(sim.data.qvel[vel_adr + 3])
+        msg.twist.twist.angular.y = float(sim.data.qvel[vel_adr + 4])
+        msg.twist.twist.angular.z = float(sim.data.qvel[vel_adr + 5])
+
+    return msg
 
 # ---------------------------------------------------------------------- #
 # ROS -> sim   (command interface = sensor_msgs/JointState)
@@ -117,32 +212,53 @@ def imu_msg(sim: MujocoSim, stamp: Time, frame_id: str = "imu_link") -> Imu:
 def cmd_to_ctrl(msg: JointState, sim: MujocoSim) -> np.ndarray:
     """Map a JointState command to a full-length ctrl vector.
 
-    Uses ``msg.effort`` (torque) for the double_pendulum's motor actuators.
-    Names in ``msg.name`` are matched to actuator names; if empty, fields are
-    applied in actuator order. Unknown names / length mismatches are warned
-    and ignored. Actuators not addressed keep ctrl = 0.
-    """
+    Each actuator reads its scalar from the single JointState field its
+    interface expects (``sim.actuator_interfaces``, resolved from the model):
+    EFFORT -> ``msg.effort``, POSITION -> ``msg.position``, VELOCITY ->
+    ``msg.velocity``. So a motor gets a torque, a position actuator a target
+    angle, a velocity actuator a target speed -- all written raw into ctrl.
 
+    Two addressing modes:
+    - named (``msg.name`` set): each name -> actuator id, value read from that
+      actuator's field at the *name index* ``i`` (name[i] pairs with field[i]).
+    - unnamed: applied in actuator order; actuator ``aid`` reads its field at
+      *index aid* (arrays are treated sparse per actuator index for mixed
+      models -- fill each actuator's slot in the array its interface uses).
+
+    Unknown names are warned and ignored; actuators whose expected field has no
+    value at the needed index keep ctrl = 0 and are summarized in one warning.
+    """
     ctrl = np.zeros(sim.nu, dtype=float)
-    effort = list(msg.effort)
+    interfaces = sim.actuator_interfaces
+    fields = {
+        "effort": list(msg.effort),
+        "position": list(msg.position),
+        "velocity": list(msg.velocity),
+    }
+    missing = []  # aggregated so a short/empty cmd warns once, not per actuator
 
     if not msg.name:
-        n = min(len(effort), sim.nu)
-        if len(effort) != sim.nu:
-            logger.warning("cmd effort len %d != nu %d; applying first %d",
-                           len(effort), sim.nu, n)
-        ctrl[:n] = effort[:n]
-        return ctrl
+        for aid in range(sim.nu):
+            field = _FIELD_BY_INTERFACE[interfaces[aid]]
+            arr = fields[field]
+            if aid < len(arr):
+                ctrl[aid] = arr[aid]
+            else:
+                missing.append((aid, field))
+    else:
+        for i, name in enumerate(msg.name):
+            aid = mujoco.mj_name2id(sim.model, mujoco.mjtObj.mjOBJ_ACTUATOR, name)
+            if aid < 0:
+                logger.warning("unknown actuator '%s' in cmd; ignored", name)
+                continue
+            field = _FIELD_BY_INTERFACE[interfaces[aid]]
+            arr = fields[field]
+            if i < len(arr):
+                ctrl[aid] = arr[i]
+            else:
+                missing.append((name, field))
 
-    if len(effort) < len(msg.name):
-        logger.warning("cmd has %d names but %d effort values; missing -> 0",
-                       len(msg.name), len(effort))
-
-    for i, name in enumerate(msg.name):
-        aid = mujoco.mj_name2id(sim.model, mujoco.mjtObj.mjOBJ_ACTUATOR, name)
-        if aid < 0:
-            logger.warning("unknown actuator '%s' in cmd; ignored", name)
-            continue
-        if i < len(effort):
-            ctrl[aid] = effort[i]
+    if missing:
+        logger.warning("cmd missing values for %d actuator(s): %s; those ctrl stay 0",
+                       len(missing), missing)
     return ctrl
