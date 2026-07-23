@@ -1,5 +1,5 @@
-<mujoco model="WF_GOAT">
-    <compiler angle="radian" coordinate="local" meshdir="meshes/" autolimits="true"/>
+<mujoco model="GOAT_Floating">
+    <compiler angle="radian" coordinate="local" meshdir="../meshes/" autolimits="true"/>
     
     <option timestep="0.002" gravity="0 0 -9.81"/>
 
@@ -43,11 +43,8 @@
 
     <worldbody>
         <body name="base_Link" pos="0 0 1.0">
-            <!-- Floating base (active). For a FIXED base, comment out the freejoint
-                 below: a world-attached body with no free joint is rigidly fixed at
-                 this body's pos/quat. Doing so changes nq 15->8 and nv 14->8, so also
-                 switch to the fixed-base <keyframe> alternative further down. -->
-            <!-- <freejoint name="root"/> -->
+            <!-- Floating base -->
+            <freejoint name="root"/>
             <site name="imu_site" pos="0 0 0" size="0.01" type="sphere" rgba="1 0 0 1"/>
             
             <inertial pos="-0.009521 0.000016 -0.072346" mass="2.818" fullinertia="0.02028445 0.023476973 0.021206204 -0.000005647 0.006404633 0.000000541"/>
@@ -62,13 +59,13 @@
 
                 <body name="thigh_L_Link" pos="-0.054 -0.017 0">
                     <joint name="thigh_L_Joint" type="hinge" axis="0 1 0" range="-0.3840 2.0071" damping="0.0" frictionloss="0.0" armature="0.001"/>
-                    <inertial pos="-0.002292 0.044134 -0.032074" mass="0.429" fullinertia="0.002141 0.002065 0.000345 -0.000025 -0.000067 -0.000348"/>
+                    <inertial pos="-0.00199 0.042368 -0.035253" mass="0.483" fullinertia="0.002424 0.002341 0.0003843 -0.000020504 -0.000075431 -0.0003781"/>
                     <geom type="mesh" mesh="thigh_L_Link" material="white" contype="0" conaffinity="0" group="1"/>
                     <geom type="box" size="0.045 0.025 0.0725" pos="-0.011 0.016 -0.116" group="3"/>
 
                     <body name="calf_L_Link" pos="0 0.018 -0.205">
                         <joint name="knee_L_Joint" type="hinge" axis="0 -1 0" range="-0.523599 2.3387" damping="0.0" frictionloss="0.0" armature="0.001"/>
-                        <inertial pos="0.001922 0.000564 -0.169664" mass="0.287" fullinertia="0.001163 0.001199 0.000092 0.0000005 -0.000035 0.0000013"/>
+                        <inertial pos="0.002023 0.000639 -0.162465" mass="0.299" fullinertia="0.001486 0.001526 0.000095179 0.000000666 -0.000033542 0.000009955"/>
                         <geom type="mesh" mesh="calf_L_Link" material="black" contype="0" conaffinity="0" group="1"/>
                         <geom type="cylinder" size="0.0325 0.1165" pos="0 0 -0.116" group="3"/>
 
@@ -90,13 +87,13 @@
 
                 <body name="thigh_R_Link" pos="-0.054 0.017 0">
                     <joint name="thigh_R_Joint" type="hinge" axis="0 -1 0" range="-2.0071 0.3840" damping="0.0" frictionloss="0.0" armature="0.001"/>
-                    <inertial pos="-0.002292 -0.044134 -0.032074" mass="0.429" fullinertia="0.002141 0.002065 0.000345 0.000025 -0.000067 0.000348"/>
+                    <inertial pos="-0.00199 -0.042368 -0.035253" mass="0.483" fullinertia="0.002424 0.002341 0.0003843 0.000020504 -0.000075431 0.0003781"/>
                     <geom type="mesh" mesh="thigh_R_Link" material="white" contype="0" conaffinity="0" group="1"/>
                     <geom type="box" size="0.045 0.025 0.0725" pos="-0.011 -0.016 -0.116" group="3"/>
 
                     <body name="calf_R_Link" pos="0 -0.018 -0.205">
                         <joint name="knee_R_Joint" type="hinge" axis="0 1 0" range="-2.3387 0.523599" damping="0.0" frictionloss="0.0" armature="0.001"/>
-                        <inertial pos="0.001922 -0.000564 -0.169664" mass="0.287" fullinertia="0.001163 0.001199 0.000092 -0.0000005 -0.000035 -0.0000013"/>
+                        <inertial pos="0.002023 -0.000639 -0.162465" mass="0.299" fullinertia="0.001486 0.001526 0.000095179 -0.000000666 -0.000033542 -0.000009955"/>
                         <geom type="mesh" mesh="calf_R_Link" material="black" contype="0" conaffinity="0" group="1"/>
                         <geom type="cylinder" size="0.0325 0.1165" pos="0 0 -0.116" group="3"/>
 
@@ -112,15 +109,12 @@
         </body>
     </worldbody>
 
-    <!-- Wheel-ground friction controlled explicitly via contact pairs.
-         friction = [slide1, slide2, torsion, roll1, roll2]; condim=3 (sliding only).
-         Other collision geoms (legs/base) still use default dynamic contacts (max rule). -->
     <contact>
         <pair name="floor_wheel_L" geom1="floor" geom2="wheel_L_collision" condim="3" friction="1.0 1.0 0.001 0.0001 0.0001"/>
         <pair name="floor_wheel_R" geom1="floor" geom2="wheel_R_collision" condim="3" friction="1.0 1.0 0.001 0.0001 0.0001"/>
     </contact>
 
-    <!-- Torque-based actuator -->
+    <!-- Actuator -->
     <actuator>
         <motor name="hip_L_motor" joint="hip_L_Joint" ctrllimited="true" ctrlrange="-4.5 4.5"/>
         <motor name="thigh_L_motor" joint="thigh_L_Joint" ctrllimited="true" ctrlrange="-4.5 4.5"/>
@@ -132,40 +126,13 @@
         <motor name="wheel_R_motor" joint="wheel_R_Joint" ctrllimited="true" ctrlrange="-2.5 2.5"/>
     </actuator>
 
-    <!-- Position-based actuator -->
-    <!-- <actuator>
-        <position name="hip_L_motor"   joint="hip_L_Joint"   kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-1.7453 1.0123"   forcelimited="true" forcerange="-4.5 4.5"/>
-        <position name="thigh_L_motor" joint="thigh_L_Joint" kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-0.3840 2.0071"   forcelimited="true" forcerange="-4.5 4.5"/>
-        <position name="knee_L_motor"  joint="knee_L_Joint"  kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-0.523599 2.3387" forcelimited="true" forcerange="-9.0 9.0"/>
-        <velocity name="wheel_L_motor" joint="wheel_L_Joint" kv="0.002"          ctrllimited="true" ctrlrange="-15.0 15.0"       forcelimited="true" forcerange="-2.5 2.5"/>
-        <position name="hip_R_motor"   joint="hip_R_Joint"   kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-1.0123 1.7453"   forcelimited="true" forcerange="-4.5 4.5"/>
-        <position name="thigh_R_motor" joint="thigh_R_Joint" kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-2.0071 0.3840"   forcelimited="true" forcerange="-4.5 4.5"/>
-        <position name="knee_R_motor"  joint="knee_R_Joint"  kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-2.3387 0.523599" forcelimited="true" forcerange="-9.0 9.0"/>
-        <velocity name="wheel_R_motor" joint="wheel_R_Joint" kv="0.002"          ctrllimited="true" ctrlrange="-15.0 15.0"       forcelimited="true" forcerange="-2.5 2.5"/>
-    </actuator> -->
-
-
-    <!-- Floating-base keyframe (active; matches the freejoint above)
-        qpos (nq=15): base[x y z]  base_quat[w x y z]  | hipL thighL kneeL wheelL  hipR thighR kneeR wheelR
-        qvel (nv=14): base[vx vy vz wx wy wz]          | 8 joint velocities
-        ctrl (nu=8) : 8 actuators -->
+    <!-- Initial pose -->
     <!-- <keyframe>
-        <key name="hanging"
-             qpos="0.0 0.0 1.0   1.0 0.0 0.0 0.0   0.0 0.0 0.0 0.0   0.0 0.0 0.0 0.0"
-             qvel="0.0 0.0 0.0 0.0 0.0 0.0   0.0 0.0 0.0 0.0   0.0 0.0 0.0 0.0"
-             ctrl="0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0"/>
-    </keyframe> -->
-
-    <!-- Fixed-base keyframe alternative. Use this (and comment out the floating-base
-         keyframe above) when the freejoint is removed: nq=8, nv=8.
-         qpos order (8): hipL thighL kneeL wheelL  hipR thighR kneeR wheelR
-         qvel order (8): 8 joint velocities ; ctrl (8): 8 actuators -->
-    <keyframe>
         <key name="home"
              qpos="0.0 0.0 0.0 0.0   0.0 0.0 0.0 0.0"
              qvel="0.0 0.0 0.0 0.0   0.0 0.0 0.0 0.0"
              ctrl="0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0"/>
-    </keyframe>
+    </keyframe> -->
    
     <sensor>
         <accelerometer name="imu_acc" site="imu_site"/>

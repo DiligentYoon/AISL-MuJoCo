@@ -1,4 +1,4 @@
-# 02_tutorial_key_binding.py
+# 01_tutorial_hello_mujoco.py
 # 해당 예제는 MuJoCo GUI를 실행하고 간단한 기능 테스트를 수행하기 위함.
 
 import mujoco

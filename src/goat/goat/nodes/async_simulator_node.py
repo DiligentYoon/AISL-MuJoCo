@@ -1,6 +1,6 @@
 """Free-running, timer-driven MuJoCo simulator node.
 
-This is the asynchronous counterpart to the lockstep ``sync_simulator_node`` (where
+This is the asynchronous counterpart to the lockstep ``goat_mujoco_node`` (where
 one ``/commands`` message triggers exactly one control step). Here the
 simulation advances on a fixed-rate timer instead:
 
