@@ -22,9 +22,9 @@ from goat.utils import ros_bridge
 from goat.utils.mujoco_sim import MujocoSim, SimConfig
 
 
-class SyncSimulatorNode(Node):
+class GoatMujocoNode(Node):
     def __init__(self) -> None:
-        super().__init__('sync_simulator_node')
+        super().__init__('goat_mujoco_node')
 
         self.declare_parameter('model_path', '')
         self.declare_parameter('timestep', 0.0)
@@ -37,6 +37,7 @@ class SyncSimulatorNode(Node):
             ParameterDescriptor(dynamic_typing=True),
         )
 
+        # Parameters
         model_path = self.get_parameter('model_path').value
         if not model_path:
             raise RuntimeError('Parameter "model_path" must be set.')
@@ -49,6 +50,7 @@ class SyncSimulatorNode(Node):
         home_keyframe = self.get_parameter('home_keyframe').value or None
         joint_order = list(self.get_parameter('joint_order').value) or None
 
+        # MuJoCo instance
         self.sim = MujocoSim(SimConfig(
             model_path=model_path,
             use_viewer=self._use_viewer,
@@ -64,17 +66,11 @@ class SyncSimulatorNode(Node):
         self._control_period = self._steps_per_cmd * self.sim.timestep
         self._shutting_down = False
 
-        # RELIABLE so commands are not dropped: in this synchronous closed loop
-        # a dropped /cmd stalls the external controller (deadlock), not data.
+        # Subscriber
         cmd_qos = QoSProfile(depth=10, reliability=ReliabilityPolicy.RELIABLE)
         self.cmd_sub = self.create_subscription(JointState, 'commands', self._on_cmd, cmd_qos)
 
-        # Latched (TRANSIENT_LOCAL, depth 1) so a controller that subscribes
-        # AFTER this node has published the initial seed still receives the
-        # latest state -- this is what breaks the start-up deadlock: the sim
-        # seeds the loop once, the controller wakes on that state and sends the
-        # first /cmd. depth 1 keeps only the newest sample (lockstep => the
-        # controller never wants stale states).
+        # Publisher
         state_qos = QoSProfile(
             depth=1,
             reliability=ReliabilityPolicy.RELIABLE,
@@ -84,16 +80,14 @@ class SyncSimulatorNode(Node):
         self.imu_pub = self.create_publisher(Imu, 'sim_imu', state_qos)
         self.clock_pub = self.create_publisher(Clock, 'clock', state_qos)
 
-        # Seed the loop: publish the post-reset state once WITHOUT stepping so
-        # the controller has something to act on. Without this no /cmd ever
-        # arrives and the sim never steps (deadlock).
+        # Initial publish
         self._publish_state()
 
         # Housekeeping only: watch quit/viewer-close. Never advances the sim.
         self._housekeep_timer = self.create_timer(0.1, self._on_housekeep)
 
         self.get_logger().info(
-            f'sync_simulator_node up: model={model_path}, '
+            f'goat_mujoco_node up: model={model_path}, '
             f'steps_per_cmd={self._steps_per_cmd}, use_viewer={self._use_viewer}'
         )
 
@@ -179,7 +173,7 @@ class SyncSimulatorNode(Node):
         if self._shutting_down:
             return
         self._shutting_down = True
-        self.get_logger().info('shutting down sync_simulator_node')
+        self.get_logger().info('shutting down goat_mujoco_node')
         self.sim.close_viewer()
 
     def destroy_node(self) -> bool:
@@ -189,7 +183,7 @@ class SyncSimulatorNode(Node):
 
 def main(args=None) -> None:
     rclpy.init(args=args)
-    node = SyncSimulatorNode()
+    node = GoatMujocoNode()
     try:
         # Manual spin so a viewer-close / quit (which only sets a flag) breaks
         # the loop; teardown below then runs in the correct order.
