@@ -20,12 +20,12 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument(
             'model_path',
-            default_value=PathJoinSubstitution([pkg, 'config', robot, 'fixed_goat.xml']),
-            description='MJCF model path (defaults to config/<robot>/fixed_goat.xml).',
+            default_value=PathJoinSubstitution([pkg, 'config', robot, 'xml', 'goat_on_stand.xml']),
+            description='MJCF model path (defaults to config/<robot>/xml/goat_fixed.xml).',
         ),
         DeclareLaunchArgument(
             'config_file',
-            default_value=PathJoinSubstitution([pkg, 'config', robot, 'goat_mujoco.yaml']),
+            default_value=PathJoinSubstitution([pkg, 'config', robot, 'yaml', 'goat_mujoco.yaml']),
             description='YAML parameter file for the simulator node.',
         ),
         Node(
