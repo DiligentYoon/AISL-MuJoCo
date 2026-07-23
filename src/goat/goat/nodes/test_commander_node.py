@@ -1,6 +1,6 @@
-"""Minimal lockstep test commander for the sync simulator.
+"""Minimal lockstep test commander for the goat_mujoco simulator.
 
-The sync simulator is lockstep: it advances ONE control step per ``/commands``
+The goat_mujoco simulator is lockstep: it advances ONE control step per ``/commands``
 message and seeds the loop with a single latched ``/sim_joint_states``. This
 node closes that loop so the simulation actually runs without a real
 controller: it subscribes to ``/sim_joint_states`` and, for EACH state
