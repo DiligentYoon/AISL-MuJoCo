@@ -7,7 +7,7 @@
 
     <!-- Stand jig -->
     <asset>
-        <mesh name="jig_mesh" file="GOAT_gochu_stand7mm35cm.stl" scale="0.5 1 1"/>
+        <mesh name="jig_mesh" file="GOAT_stand7mm35cm.stl" scale="0.5 1 1"/>
         <material name="jig_material" rgba="0.8 0.8 0.8 1.0"/>
     </asset>
 
@@ -25,7 +25,7 @@
     <!-- Initial pose. -->
     <keyframe>
         <key name="home"
-             qpos="0 0 0.4605   1 0 0 0   0 0.738 1.462 0   0 -0.738 -1.462 0"
+             qpos="0 0 0.4605   1 0 0 0   0 1.0942 1.8852 0   0 -1.0942 -1.8852 0"
              qvel="0 0 0     0 0 0     0 0 0 0   0 0 0 0"/>
     </keyframe>
 </mujoco>

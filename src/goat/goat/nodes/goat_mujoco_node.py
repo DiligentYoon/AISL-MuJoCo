@@ -17,6 +17,7 @@ from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
 from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg import Imu, JointState
+from nav_msgs.msg import Odometry
 
 from goat.utils import ros_bridge
 from goat.utils.mujoco_sim import MujocoSim, SimConfig
@@ -36,10 +37,7 @@ class GoatMujocoNode(Node):
         self.declare_parameter('use_viewer', True)
         self.declare_parameter('render_sleep', True)
         self.declare_parameter('home_keyframe', '')
-        self.declare_parameter(
-            'joint_order', [],
-            ParameterDescriptor(dynamic_typing=True),
-        )
+        self.declare_parameter('joint_order', [], ParameterDescriptor(dynamic_typing=True))
 
         # Parameters
         model_path = self.get_parameter('model_path').value
@@ -82,6 +80,7 @@ class GoatMujocoNode(Node):
         )
         self.joint_pub = self.create_publisher(JointState, 'sim_joint_states', state_qos)
         self.imu_pub = self.create_publisher(Imu, 'sim_imu', state_qos)
+        self.odom_pub = self.create_publisher(Odometry, 'sim_odom', state_qos)
         self.clock_pub = self.create_publisher(Clock, 'clock', state_qos)
 
         # Initial publish
@@ -135,6 +134,7 @@ class GoatMujocoNode(Node):
         self.clock_pub.publish(Clock(clock=stamp))
         self.joint_pub.publish(ros_bridge.joint_state_msg(self.sim, stamp))
         self.imu_pub.publish(ros_bridge.imu_msg(self.sim, stamp))
+        self.odom_pub.publish(ros_bridge.odom_msg(self.sim, stamp))
 
     # ------------------------------------------------------------------ #
     # Housekeeping: quit / viewer close (no stepping)

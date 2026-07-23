@@ -118,7 +118,7 @@
     </contact>
 
     <!-- Torque-based actuator -->
-    <actuator>
+    <!-- <actuator>
         <motor name="hip_L_motor" joint="hip_L_Joint" ctrllimited="true" ctrlrange="-4.5 4.5"/>
         <motor name="thigh_L_motor" joint="thigh_L_Joint" ctrllimited="true" ctrlrange="-4.5 4.5"/>
         <motor name="knee_L_motor" joint="knee_L_Joint" ctrllimited="true" ctrlrange="-9.0 9.0"/>
@@ -127,10 +127,10 @@
         <motor name="thigh_R_motor" joint="thigh_R_Joint" ctrllimited="true" ctrlrange="-4.5 4.5"/>
         <motor name="knee_R_motor" joint="knee_R_Joint" ctrllimited="true" ctrlrange="-9.0 9.0"/>
         <motor name="wheel_R_motor" joint="wheel_R_Joint" ctrllimited="true" ctrlrange="-2.5 2.5"/>
-    </actuator>
+    </actuator> -->
 
     <!-- Position-based actuator -->
-    <!-- <actuator>
+    <actuator>
         <position name="hip_L_motor"   joint="hip_L_Joint"   kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-1.7453 1.0123"   forcelimited="true" forcerange="-4.5 4.5"/>
         <position name="thigh_L_motor" joint="thigh_L_Joint" kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-0.3840 2.0071"   forcelimited="true" forcerange="-4.5 4.5"/>
         <position name="knee_L_motor"  joint="knee_L_Joint"  kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-0.523599 2.3387" forcelimited="true" forcerange="-9.0 9.0"/>
@@ -139,7 +139,7 @@
         <position name="thigh_R_motor" joint="thigh_R_Joint" kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-2.0071 0.3840"   forcelimited="true" forcerange="-4.5 4.5"/>
         <position name="knee_R_motor"  joint="knee_R_Joint"  kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-2.3387 0.523599" forcelimited="true" forcerange="-9.0 9.0"/>
         <velocity name="wheel_R_motor" joint="wheel_R_Joint" kv="0.002"          ctrllimited="true" ctrlrange="-15.0 15.0"       forcelimited="true" forcerange="-2.5 2.5"/>
-    </actuator> -->
+    </actuator>
 
 
     <!-- Floating-base keyframe (active; matches the freejoint above)
