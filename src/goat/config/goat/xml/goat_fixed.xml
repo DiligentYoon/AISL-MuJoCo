@@ -109,13 +109,58 @@
         </body>
     </worldbody>
 
-    <!-- Wheel-ground friction controlled explicitly via contact pairs.
-         friction = [slide1, slide2, torsion, roll1, roll2]; condim=3 (sliding only).
-         Other collision geoms (legs/base) still use default dynamic contacts (max rule). -->
+    <!-- Wheel-ground friction controlled explicitly via contact pairs. -->
     <contact>
-        <pair name="floor_wheel_L" geom1="floor" geom2="wheel_L_collision" condim="3" friction="1.0 1.0 0.001 0.0001 0.0001"/>
-        <pair name="floor_wheel_R" geom1="floor" geom2="wheel_R_collision" condim="3" friction="1.0 1.0 0.001 0.0001 0.0001"/>
+        <exclude body1="base_Link"    body2="hip_L_Link"/>
+        <exclude body1="base_Link"    body2="hip_R_Link"/>
+        <exclude body1="base_Link"    body2="thigh_L_Link"/>
+        <exclude body1="base_Link"    body2="thigh_R_Link"/>
+        <exclude body1="base_Link"    body2="calf_L_Link"/>
+        <exclude body1="base_Link"    body2="calf_R_Link"/>
+        <exclude body1="base_Link"    body2="wheel_L_Link"/>
+        <exclude body1="base_Link"    body2="wheel_R_Link"/>
+        <exclude body1="hip_L_Link"   body2="hip_R_Link"/>
+        <exclude body1="hip_L_Link"   body2="thigh_R_Link"/>
+        <exclude body1="hip_L_Link"   body2="calf_L_Link"/>
+        <exclude body1="hip_L_Link"   body2="calf_R_Link"/>
+        <exclude body1="hip_L_Link"   body2="wheel_L_Link"/>
+        <exclude body1="hip_L_Link"   body2="wheel_R_Link"/>
+        <exclude body1="hip_R_Link"   body2="thigh_L_Link"/>
+        <exclude body1="hip_R_Link"   body2="calf_L_Link"/>
+        <exclude body1="hip_R_Link"   body2="calf_R_Link"/>
+        <exclude body1="hip_R_Link"   body2="wheel_L_Link"/>
+        <exclude body1="hip_R_Link"   body2="wheel_R_Link"/>
+        <exclude body1="thigh_L_Link" body2="thigh_R_Link"/>
+        <exclude body1="thigh_L_Link" body2="calf_R_Link"/>
+        <exclude body1="thigh_L_Link" body2="wheel_L_Link"/>
+        <exclude body1="thigh_L_Link" body2="wheel_R_Link"/>
+        <exclude body1="thigh_R_Link" body2="calf_L_Link"/>
+        <exclude body1="thigh_R_Link" body2="wheel_L_Link"/>
+        <exclude body1="thigh_R_Link" body2="wheel_R_Link"/>
+        <exclude body1="calf_L_Link"  body2="calf_R_Link"/>
+        <exclude body1="calf_L_Link"  body2="wheel_R_Link"/>
+        <exclude body1="calf_R_Link"  body2="wheel_L_Link"/>
+        <exclude body1="wheel_L_Link" body2="wheel_R_Link"/>
     </contact>
+
+    <contact>
+        <pair name="floor_wheel_L"
+            geom1="floor"
+            geom2="wheel_L_collision"
+            condim="3"
+            friction="1.0 1.0 0.0 0.0 0.0"
+            solref="0.02 1.0"
+            solimp="0.9 0.95 0.001 0.5 2"/>
+
+        <pair name="floor_wheel_R"
+            geom1="floor"
+            geom2="wheel_R_collision"
+            condim="3"
+            friction="1.0 1.0 0.0 0.0 0.0"
+            solref="0.02 1.0"
+            solimp="0.9 0.95 0.001 0.5 2"/>
+    </contact>
+
 
     <!-- Torque-based actuator -->
     <!-- <actuator>
@@ -131,14 +176,14 @@
 
     <!-- Position-based actuator -->
     <actuator>
-        <position name="hip_L_motor"   joint="hip_L_Joint"   kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-1.7453 1.0123"   forcelimited="true" forcerange="-4.5 4.5"/>
-        <position name="thigh_L_motor" joint="thigh_L_Joint" kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-0.3840 2.0071"   forcelimited="true" forcerange="-4.5 4.5"/>
-        <position name="knee_L_motor"  joint="knee_L_Joint"  kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-0.523599 2.3387" forcelimited="true" forcerange="-9.0 9.0"/>
-        <velocity name="wheel_L_motor" joint="wheel_L_Joint" kv="0.002"          ctrllimited="true" ctrlrange="-15.0 15.0"       forcelimited="true" forcerange="-2.5 2.5"/>
-        <position name="hip_R_motor"   joint="hip_R_Joint"   kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-1.0123 1.7453"   forcelimited="true" forcerange="-4.5 4.5"/>
-        <position name="thigh_R_motor" joint="thigh_R_Joint" kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-2.0071 0.3840"   forcelimited="true" forcerange="-4.5 4.5"/>
-        <position name="knee_R_motor"  joint="knee_R_Joint"  kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-2.3387 0.523599" forcelimited="true" forcerange="-9.0 9.0"/>
-        <velocity name="wheel_R_motor" joint="wheel_R_Joint" kv="0.002"          ctrllimited="true" ctrlrange="-15.0 15.0"       forcelimited="true" forcerange="-2.5 2.5"/>
+        <position name="hip_L_Joint"   joint="hip_L_Joint"   kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-1.7453 1.0123"   forcelimited="true" forcerange="-4.5 4.5"/>
+        <position name="thigh_L_Joint" joint="thigh_L_Joint" kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-0.3840 2.0071"   forcelimited="true" forcerange="-4.5 4.5"/>
+        <position name="knee_L_Joint"  joint="knee_L_Joint"  kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-0.523599 2.3387" forcelimited="true" forcerange="-9.0 9.0"/>
+        <velocity name="wheel_L_Joint" joint="wheel_L_Joint" kv="0.002"          ctrllimited="true" ctrlrange="-15.0 15.0"       forcelimited="true" forcerange="-2.5 2.5"/>
+        <position name="hip_R_Joint"   joint="hip_R_Joint"   kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-1.0123 1.7453"   forcelimited="true" forcerange="-4.5 4.5"/>
+        <position name="thigh_R_Joint" joint="thigh_R_Joint" kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-2.0071 0.3840"   forcelimited="true" forcerange="-4.5 4.5"/>
+        <position name="knee_R_Joint"  joint="knee_R_Joint"  kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-2.3387 0.523599" forcelimited="true" forcerange="-9.0 9.0"/>
+        <velocity name="wheel_R_Joint" joint="wheel_R_Joint" kv="0.002"          ctrllimited="true" ctrlrange="-15.0 15.0"       forcelimited="true" forcerange="-2.5 2.5"/>
     </actuator>
 
 
@@ -157,11 +202,18 @@
          keyframe above) when the freejoint is removed: nq=8, nv=8.
          qpos order (8): hipL thighL kneeL wheelL  hipR thighR kneeR wheelR
          qvel order (8): 8 joint velocities ; ctrl (8): 8 actuators -->
-    <keyframe>
+    <!-- <keyframe>
         <key name="home"
              qpos="0.0 0.0 0.0 0.0   0.0 0.0 0.0 0.0"
              qvel="0.0 0.0 0.0 0.0   0.0 0.0 0.0 0.0"
              ctrl="0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0"/>
+    </keyframe> -->
+
+    <keyframe>
+        <key name="home"
+            qpos="0 1.0942 1.8852 0   0 -1.0942 -1.8852 0"
+            qvel="0 0 0 0             0 0 0 0"
+            ctrl="0 1.0942 1.8852 0   0 -1.0942 -1.8852 0"/>
     </keyframe>
    
     <sensor>

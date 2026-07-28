@@ -21,7 +21,7 @@ def generate_launch_description():
         DeclareLaunchArgument(
             'model_path',
             default_value=PathJoinSubstitution([pkg, 'config', robot, 'xml', 'goat_on_stand.xml']),
-            description='MJCF model path (defaults to config/<robot>/xml/goat_fixed.xml).',
+            description='MJCF model path (defaults to config/<robot>/xml/goat_floating.xml).',
         ),
         DeclareLaunchArgument(
             'config_file',

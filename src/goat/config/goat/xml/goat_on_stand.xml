@@ -7,14 +7,14 @@
 
     <!-- Stand jig -->
     <asset>
-        <mesh name="jig_mesh" file="GOAT_stand7mm35cm.stl" scale="0.5 1 1"/>
+        <mesh name="jig_mesh" file="GOAT_stand7mm35cm.stl" scale="0.7 1 1"/>
         <material name="jig_material" rgba="0.8 0.8 0.8 1.0"/>
     </asset>
 
     <worldbody>
         <light pos="0 0 1.5" dir="0 0 -1" directional="true"/>
 
-        <body name="jig_link" pos="0 0 0">
+        <body name="jig_link" pos="-0.04 0 0">
             <inertial pos="0 0 0" mass="10.0" fullinertia="0.05 0.05 0.05 0.0 0.0 0.0"/>
             <geom name="jig_geom" type="mesh" mesh="jig_mesh" material="jig_material"
                   pos="0 0 0" euler="0 0 -1.570796"
@@ -23,9 +23,12 @@
     </worldbody>
 
     <!-- Initial pose. -->
+
+
     <keyframe>
         <key name="home"
-             qpos="0 0 0.4605   1 0 0 0   0 1.0942 1.8852 0   0 -1.0942 -1.8852 0"
-             qvel="0 0 0     0 0 0     0 0 0 0   0 0 0 0"/>
+             qpos="0 0 0.46   1 0 0 0   0 1.0942 1.8852 0   0 -1.0942 -1.8852 0"
+             qvel="0 0 0     0 0 0     0 0 0 0   0 0 0 0"
+             ctrl="0 1.0942 1.8852 0   0 -1.0942 -1.8852 0"/>
     </keyframe>
 </mujoco>

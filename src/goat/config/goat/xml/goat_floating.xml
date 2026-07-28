@@ -1,13 +1,7 @@
 <mujoco model="GOAT_Floating">
     <compiler angle="radian" coordinate="local" meshdir="../meshes/" autolimits="true"/>
     
-    <option timestep="0.002" gravity="0 0 -9.81"/>
-
-    <visual>
-        <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0"/>
-        <rgba haze="0.15 0.25 0.35 1"/>
-        <global azimuth="120" elevation="-20"/>
-    </visual>
+    <option timestep="0.002" gravity="0 0 -9.81" integrator="implicit" solver="PGS"/>
 
     <asset>
         <texture  name="groundplane" type="2d" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" markrgb="0.8 0.8 0.8" width="512" height="512"/>
@@ -37,8 +31,10 @@
 
     <default>
         <joint damping="0.0" frictionloss="0.0"/>
-        <geom contype="1" conaffinity="1" friction="0.65 0.1 0.1"/>
+        <geom contype="1" conaffinity="1" friction="0.6 0.1 0.1"/>
         <motor ctrllimited="true"/>
+        <position ctrllimited="true"/>
+        <velocity ctrllimited="true"/>
     </default>
 
     <worldbody>
@@ -47,33 +43,33 @@
             <freejoint name="root"/>
             <site name="imu_site" pos="0 0 0" size="0.01" type="sphere" rgba="1 0 0 1"/>
             
-            <inertial pos="-0.009521 0.000016 -0.072346" mass="2.818" fullinertia="0.02028445 0.023476973 0.021206204 -0.000005647 0.006404633 0.000000541"/>
+            <inertial pos="-0.009521 0.000016 -0.072346" mass="3.119" fullinertia="0.02028445 0.023476973 0.021206204 -0.000005647 0.006404633 0.000000541"/>
             <geom type="mesh" mesh="base_Link" material="black" pos="-0.1235 0 0.0155" contype="0" conaffinity="0" group="1"/>
             <geom type="box" size="0.107 0.100 0.095" pos="-0.02 0 -0.015" group="3"/>
 
             <body name="hip_L_Link" pos="0.038386 0.094233 -0.152597">
                 <joint name="hip_L_Joint" type="hinge" axis="-1 0 0" range="-1.7453 1.0123" damping="0.0" frictionloss="0.0" armature="0.001"/>
-                <inertial pos="-0.048092 -0.038296 -0.000162" mass="0.32" fullinertia="0.0001437 0.0002157 0.0001977 -0.0000128 -0.00000153 -0.000000447"/>
+                <inertial pos="-0.048092 -0.038296 -0.000162" mass="0.316" fullinertia="0.000143701 0.000215732 0.000197705 -0.000012808 -0.000001530 -0.000000447"/>
                 <geom type="mesh" mesh="hip_L_Link" material="black" contype="0" conaffinity="0" group="1"/>
                 <geom type="cylinder" size="0.042 0.0675" pos="-0.0535 0 0" euler="1.57 0 0" group="3"/>
 
                 <body name="thigh_L_Link" pos="-0.054 -0.017 0">
                     <joint name="thigh_L_Joint" type="hinge" axis="0 1 0" range="-0.3840 2.0071" damping="0.0" frictionloss="0.0" armature="0.001"/>
-                    <inertial pos="-0.00199 0.042368 -0.035253" mass="0.483" fullinertia="0.002424 0.002341 0.0003843 -0.000020504 -0.000075431 -0.0003781"/>
+                    <inertial pos="-0.002015 0.042352 -0.035272" mass="0.496" fullinertia="0.003893 0.002945 0.001254 0.000020446085 -0.000110100 0.000343500"/>
                     <geom type="mesh" mesh="thigh_L_Link" material="white" contype="0" conaffinity="0" group="1"/>
                     <geom type="box" size="0.045 0.025 0.0725" pos="-0.011 0.016 -0.116" group="3"/>
 
                     <body name="calf_L_Link" pos="0 0.018 -0.205">
                         <joint name="knee_L_Joint" type="hinge" axis="0 -1 0" range="-0.523599 2.3387" damping="0.0" frictionloss="0.0" armature="0.001"/>
-                        <inertial pos="0.002023 0.000639 -0.162465" mass="0.299" fullinertia="0.001486 0.001526 0.000095179 0.000000666 -0.000033542 0.000009955"/>
+                        <inertial pos="0.001969 0.000712 -0.160161" mass="0.326" fullinertia="0.009381 0.009422 0.000096695739 0.000000280420 0.000064503362 0.000041025966"/>
                         <geom type="mesh" mesh="calf_L_Link" material="black" contype="0" conaffinity="0" group="1"/>
                         <geom type="cylinder" size="0.0325 0.1165" pos="0 0 -0.116" group="3"/>
 
                         <body name="wheel_L_Link" pos="0 0.016555 -0.200">
                             <joint name="wheel_L_Joint" type="hinge" axis="0 1 0" damping="0.0" frictionloss="0.0" armature="0.001"/>
-                            <inertial pos="0 0.007264 -0.000002" mass="0.212" fullinertia="0.000338 0.000647 0.000338 -0.000000001 -0.000000008 0.000000001"/>
+                            <inertial pos="0 0.007264 -0.000002" mass="0.239" fullinertia="0.000338788 0.000647488 0.000338791 -0.000000001 -0.000000008 0.000000001"/>
                             <geom type="mesh" mesh="wheel_L_Link" material="orange" contype="0" conaffinity="0" group="1"/>
-                            <geom name="wheel_L_collision" type="cylinder" size="0.07275 0.016" pos="0 0.007 0" euler="1.5707 0 0" group="3"/>
+                            <geom name="wheel_L_collision" type="cylinder" size="0.07275 0.016" pos="0 0.007 0" euler="1.5707963267948966 0 0" group="3"/>
                         </body>
                     </body>
                 </body>
@@ -81,27 +77,27 @@
 
             <body name="hip_R_Link" pos="0.038386 -0.094233 -0.152597">
                 <joint name="hip_R_Joint" type="hinge" axis="-1 0 0" range="-1.0123 1.7453" damping="0.0" frictionloss="0.0" armature="0.001"/>
-                <inertial pos="-0.048092 0.038296 -0.000162" mass="0.32" fullinertia="0.000143 0.000215 0.000197 0.000012 -0.000001 0.0000004"/>
+                <inertial pos="-0.048092 0.038296 -0.000162" mass="0.322" fullinertia="0.000143701 0.000215732 0.000197705 0.000012808 -0.000001530 0.000000447"/>
                 <geom type="mesh" mesh="hip_R_Link" material="black" contype="0" conaffinity="0" group="1"/>
                 <geom type="cylinder" size="0.042 0.0675" pos="-0.0535 0 0" euler="1.57 0 0" group="3"/>
 
                 <body name="thigh_R_Link" pos="-0.054 0.017 0">
                     <joint name="thigh_R_Joint" type="hinge" axis="0 -1 0" range="-2.0071 0.3840" damping="0.0" frictionloss="0.0" armature="0.001"/>
-                    <inertial pos="-0.00199 -0.042368 -0.035253" mass="0.483" fullinertia="0.002424 0.002341 0.0003843 0.000020504 -0.000075431 0.0003781"/>
+                    <inertial pos="-0.002015 -0.042352 -0.035272" mass="0.495" fullinertia="0.003893 0.002945 0.001254 -0.000020446085 -0.000110100 -0.000343500"/>
                     <geom type="mesh" mesh="thigh_R_Link" material="white" contype="0" conaffinity="0" group="1"/>
                     <geom type="box" size="0.045 0.025 0.0725" pos="-0.011 -0.016 -0.116" group="3"/>
 
                     <body name="calf_R_Link" pos="0 -0.018 -0.205">
                         <joint name="knee_R_Joint" type="hinge" axis="0 1 0" range="-2.3387 0.523599" damping="0.0" frictionloss="0.0" armature="0.001"/>
-                        <inertial pos="0.002023 -0.000639 -0.162465" mass="0.299" fullinertia="0.001486 0.001526 0.000095179 -0.000000666 -0.000033542 -0.000009955"/>
+                        <inertial pos="0.001969 -0.000712 -0.160161" mass="0.327" fullinertia="0.009381 0.009422 0.000096695739 -0.000000280420 0.000064503362 -0.000041025966"/>
                         <geom type="mesh" mesh="calf_R_Link" material="black" contype="0" conaffinity="0" group="1"/>
                         <geom type="cylinder" size="0.0325 0.1165" pos="0 0 -0.116" group="3"/>
 
                         <body name="wheel_R_Link" pos="0 -0.016555 -0.200">
                             <joint name="wheel_R_Joint" type="hinge" axis="0 -1 0" damping="0.0" frictionloss="0.0" armature="0.001"/>
-                            <inertial pos="0 -0.007264 -0.000002" mass="0.212" fullinertia="0.000338 0.000647 0.000338 0.000000001 -0.000000008 -0.000000001"/>
+                            <inertial pos="0 -0.007264 -0.000002" mass="0.217" fullinertia="0.000338788 0.000647488 0.000338791 0.000000001 -0.000000008 -0.000000001"/>
                             <geom type="mesh" mesh="wheel_R_Link" material="orange" contype="0" conaffinity="0" group="1"/>
-                            <geom name="wheel_R_collision" type="cylinder" size="0.07275 0.016" pos="0 -0.007 0" euler="1.5707 0 0" group="3"/>
+                            <geom name="wheel_R_collision" type="cylinder" size="0.07275 0.016" pos="0 -0.007 0" euler="1.5707963267948966 0 0" group="3"/>
                         </body>
                     </body>
                 </body>
@@ -110,31 +106,62 @@
     </worldbody>
 
     <contact>
-        <pair name="floor_wheel_L" geom1="floor" geom2="wheel_L_collision" condim="3" friction="1.0 1.0 0.001 0.0001 0.0001"/>
-        <pair name="floor_wheel_R" geom1="floor" geom2="wheel_R_collision" condim="3" friction="1.0 1.0 0.001 0.0001 0.0001"/>
+        <exclude body1="base_Link"    body2="hip_L_Link"/>
+        <exclude body1="base_Link"    body2="hip_R_Link"/>
+        <exclude body1="base_Link"    body2="thigh_L_Link"/>
+        <exclude body1="base_Link"    body2="thigh_R_Link"/>
+        <exclude body1="base_Link"    body2="calf_L_Link"/>
+        <exclude body1="base_Link"    body2="calf_R_Link"/>
+        <exclude body1="base_Link"    body2="wheel_L_Link"/>
+        <exclude body1="base_Link"    body2="wheel_R_Link"/>
+        <exclude body1="hip_L_Link"   body2="hip_R_Link"/>
+        <exclude body1="hip_L_Link"   body2="thigh_R_Link"/>
+        <exclude body1="hip_L_Link"   body2="calf_L_Link"/>
+        <exclude body1="hip_L_Link"   body2="calf_R_Link"/>
+        <exclude body1="hip_L_Link"   body2="wheel_L_Link"/>
+        <exclude body1="hip_L_Link"   body2="wheel_R_Link"/>
+        <exclude body1="hip_R_Link"   body2="thigh_L_Link"/>
+        <exclude body1="hip_R_Link"   body2="calf_L_Link"/>
+        <exclude body1="hip_R_Link"   body2="calf_R_Link"/>
+        <exclude body1="hip_R_Link"   body2="wheel_L_Link"/>
+        <exclude body1="hip_R_Link"   body2="wheel_R_Link"/>
+        <exclude body1="thigh_L_Link" body2="thigh_R_Link"/>
+        <exclude body1="thigh_L_Link" body2="calf_R_Link"/>
+        <exclude body1="thigh_L_Link" body2="wheel_L_Link"/>
+        <exclude body1="thigh_L_Link" body2="wheel_R_Link"/>
+        <exclude body1="thigh_R_Link" body2="calf_L_Link"/>
+        <exclude body1="thigh_R_Link" body2="wheel_L_Link"/>
+        <exclude body1="thigh_R_Link" body2="wheel_R_Link"/>
+        <exclude body1="calf_L_Link"  body2="calf_R_Link"/>
+        <exclude body1="calf_L_Link"  body2="wheel_R_Link"/>
+        <exclude body1="calf_R_Link"  body2="wheel_L_Link"/>
+        <exclude body1="wheel_L_Link" body2="wheel_R_Link"/>
     </contact>
+
+    <!-- <contact>
+        <pair name="floor_wheel_L"
+            geom1="floor"
+            geom2="wheel_L_collision"/>
+
+        <pair name="floor_wheel_R"
+            geom1="floor"
+            geom2="wheel_R_collision"/>
+    </contact> -->
 
     <!-- Position-based actuator -->
     <actuator>
-        <position name="hip_L_motor"   joint="hip_L_Joint"   kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-1.7453 1.0123"   forcelimited="true" forcerange="-4.5 4.5"/>
-        <position name="thigh_L_motor" joint="thigh_L_Joint" kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-0.3840 2.0071"   forcelimited="true" forcerange="-4.5 4.5"/>
-        <position name="knee_L_motor"  joint="knee_L_Joint"  kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-0.523599 2.3387" forcelimited="true" forcerange="-9.0 9.0"/>
-        <velocity name="wheel_L_motor" joint="wheel_L_Joint" kv="0.002"          ctrllimited="true" ctrlrange="-15.0 15.0"       forcelimited="true" forcerange="-2.5 2.5"/>
-        <position name="hip_R_motor"   joint="hip_R_Joint"   kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-1.0123 1.7453"   forcelimited="true" forcerange="-4.5 4.5"/>
-        <position name="thigh_R_motor" joint="thigh_R_Joint" kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-2.0071 0.3840"   forcelimited="true" forcerange="-4.5 4.5"/>
-        <position name="knee_R_motor"  joint="knee_R_Joint"  kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-2.3387 0.523599" forcelimited="true" forcerange="-9.0 9.0"/>
-        <velocity name="wheel_R_motor" joint="wheel_R_Joint" kv="0.002"          ctrllimited="true" ctrlrange="-15.0 15.0"       forcelimited="true" forcerange="-2.5 2.5"/>
+        <position name="hip_L_Joint"   joint="hip_L_Joint"   kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-1.7453 1.0123"   forcelimited="true" forcerange="-4.5 4.5"/>
+        <position name="thigh_L_Joint" joint="thigh_L_Joint" kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-0.3840 2.0071"   forcelimited="true" forcerange="-4.5 4.5"/>
+        <position name="knee_L_Joint"  joint="knee_L_Joint"  kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-0.523599 2.3387" forcelimited="true" forcerange="-9.0 9.0"/>
+        <velocity name="wheel_L_Joint" joint="wheel_L_Joint" kv="0.05"           ctrllimited="true" ctrlrange="-15.0 15.0"       forcelimited="true" forcerange="-2.5 2.5"/>
+        <position name="hip_R_Joint"   joint="hip_R_Joint"   kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-1.0123 1.7453"   forcelimited="true" forcerange="-4.5 4.5"/>
+        <position name="thigh_R_Joint" joint="thigh_R_Joint" kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-2.0071 0.3840"   forcelimited="true" forcerange="-4.5 4.5"/>
+        <position name="knee_R_Joint"  joint="knee_R_Joint"  kp="3.0" kv="0.5"   ctrllimited="true" ctrlrange="-2.3387 0.523599" forcelimited="true" forcerange="-9.0 9.0"/>
+        <velocity name="wheel_R_Joint" joint="wheel_R_Joint" kv="0.05"           ctrllimited="true" ctrlrange="-15.0 15.0"       forcelimited="true" forcerange="-2.5 2.5"/>
     </actuator>
-
-    <!-- Initial pose -->
-    <!-- <keyframe>
-        <key name="home"
-             qpos="0.0 0.0 0.0 0.0   0.0 0.0 0.0 0.0"
-             qvel="0.0 0.0 0.0 0.0   0.0 0.0 0.0 0.0"
-             ctrl="0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0"/>
-    </keyframe> -->
    
     <sensor>
+        <framequat name="imu_quat" objtype="site" objname="imu_site"/>
         <accelerometer name="imu_acc" site="imu_site"/>
         <gyro name="imu_gyro" site="imu_site"/>
         <magnetometer name="imu_mag" site="imu_site"/>

@@ -76,11 +76,10 @@ class AsyncSimulatorNode(Node):
 
         self._shutting_down = False
 
-        # Held command: the latest ctrl applied on every tick until a new
-        # command replaces it. Zero at reset so the sim free-runs from rest.
-        # The command callback and the timer callback run in the same executor
-        # thread, so no lock is needed around this.
-        self._held_ctrl = np.zeros(self.sim.nu, dtype=float)
+        if self.sim._home_key_id is not None:
+            self._held_ctrl = np.array(self.sim.model.key_ctrl[self.sim._home_key_id].copy(), dtype=float)
+        else:
+            self._held_ctrl = np.zeros(self.sim.nu, dtype=float)
 
         # RELIABLE so commands are not dropped on a busy link; latest-wins means
         # only the most recent matters, but a reliable depth tolerates bursts.
@@ -121,7 +120,10 @@ class AsyncSimulatorNode(Node):
 
         if self.sim.consume_reset_request():
             self.sim.reset()
-            self._held_ctrl = np.zeros(self.sim.nu, dtype=float)
+            if self.sim._home_key_id is not None:
+                self._held_ctrl = np.array(self.sim.model.key_ctrl[self.sim._home_key_id].copy(), dtype=float)
+            else:
+                self._held_ctrl = np.zeros(self.sim.nu, dtype=float)
 
         self.sim.set_ctrl(self._held_ctrl)
         if not self.sim.is_paused:

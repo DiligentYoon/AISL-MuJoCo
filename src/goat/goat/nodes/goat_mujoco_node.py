@@ -158,10 +158,11 @@ class GoatMujocoNode(Node):
 
         if self.sim.consume_reset_request():
             self.sim.reset()
-            self._publish_state()
 
         if self._use_viewer:
             self.sim.sync()
+
+        self._publish_state()
 
     @property
     def shutdown_requested(self) -> bool:

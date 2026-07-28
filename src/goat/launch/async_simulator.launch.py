@@ -15,18 +15,18 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument(
             'robot',
-            default_value='double_pendulum',
+            default_value='goat',
             description='Robot name; selects config/<robot>/.',
         ),
         DeclareLaunchArgument(
             'model_path',
-            default_value=PathJoinSubstitution([pkg, 'config', robot, [robot, '.xml']]),
-            description='MJCF model path (defaults to config/<robot>/<robot>.xml).',
+            default_value=PathJoinSubstitution([pkg, 'config', robot, 'xml', 'goat_on_stand.xml']),
+            description='MJCF model path (defaults to config/<robot>/xml/goat_floating.xml).',
         ),
         DeclareLaunchArgument(
             'config_file',
-            default_value=PathJoinSubstitution([pkg, 'config', robot, 'async_simulator.yaml']),
-            description='YAML parameter file for the timer-driven simulator node.',
+            default_value=PathJoinSubstitution([pkg, 'config', robot, 'yaml', 'async_simulator.yaml']),
+            description='YAML parameter file for the simulator node.',
         ),
         Node(
             package='goat',
